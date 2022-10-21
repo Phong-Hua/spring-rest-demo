@@ -5,6 +5,9 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +20,7 @@ import com.luv2code.springdemo.entity.Student;
 public class StudentRestController {
 
 	private List<Student> theStudents;
-	
+
 	// define @PostConstruct to load the student data ... This only call once.
 	@PostConstruct
 	public void loadData() {
@@ -26,20 +29,41 @@ public class StudentRestController {
 		theStudents.add(new Student("Sarah", "Wilson"));
 		theStudents.add(new Student("Mary", "Thompson"));
 	}
-	
+
 	// define endpoint for "/students"
 	@GetMapping("/students")
 	public List<Student> getStudents() {
-		
+
 		return theStudents;
 	}
-	
+
 	// define endpoint for "/students/{studentId}" - return student at index
 	// studentId is called path variable
 	@GetMapping("/students/{studentId}")
 	public Student getStudent(@PathVariable int studentId) {
-		
+
 		// just index into the list ... keep it simple for now
+
+		// check the studentId against list size
+		if (studentId > theStudents.size() || studentId < 0)
+			throw new StudentNotFoundException("Student id not found - " + studentId);
+
 		return theStudents.get(studentId);
+	}
+
+	// Add an exception handler using @ExceptionHandler
+	@ExceptionHandler
+	public ResponseEntity<StudentErrorResponse> handleException(StudentNotFoundException ex) {
+
+		// create a StudentErrorResponse
+		StudentErrorResponse error = new StudentErrorResponse();
+
+		error.setStatus(HttpStatus.NOT_FOUND.value());
+		error.setMessage(ex.getMessage());
+		error.setTimeStamp(System.currentTimeMillis());
+
+		// return ResponseEntity
+
+		return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
 	}
 }
