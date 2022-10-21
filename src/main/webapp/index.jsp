@@ -10,5 +10,8 @@
 	<h2>Spring REST Demo</h2>
 	
 	<a href="${pageContext.request.contextPath}/test/hello">Hello</a>
+	<br><br>
+	<!-- Create a link for convenient -->
+	<a href="${pageContext.request.contextPath}/api/students">Get All Students</a>
 </body>
 </html>
